@@ -23,14 +23,20 @@ public class PlayerAnimationController : MonoBehaviour
     [SerializeField]
     private Image fxImage;
 
-    //Player blink vars
+    [SerializeField]
+    private float intimidatonDelayMin = 2.0f;
+    [SerializeField]
+    private float intimidatonDelayMax = 10.0f;
+
+
+    //Player intimidate animation vars
     private float delay = 0.0f;
     private float timer = 0.0f;
 
     // Start is called before the first frame update
     void Start()
     {
-        delay = Random.Range(2.0f, 10.0f);
+        delay = Random.Range(intimidatonDelayMin, intimidatonDelayMax);
     }
 
     // Update is called once per frame
@@ -42,7 +48,7 @@ public class PlayerAnimationController : MonoBehaviour
         {
             SetBlinkAnimation();
             timer = 0.0f;
-            delay = Random.Range(2.0f, 10.0f);
+            delay = Random.Range(intimidatonDelayMin, intimidatonDelayMax);
         }
     }
 

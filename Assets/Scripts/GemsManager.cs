@@ -15,6 +15,7 @@ public class GemsManager : MonoBehaviour
     public GemsInfoScriptableObject gemsInfo;
 
     public GameObject gemExplosion;
+    public PowerupController powerupController;
 
     private Gem[,] gemsTable;
     private GameObject boardGameObject;
@@ -114,7 +115,10 @@ public class GemsManager : MonoBehaviour
                                     if (Math.Abs(diff.magnitude - 1.0f) < Mathf.Epsilon)
                                     {
                                         MakeMove(firstSelectedGem, secondSelectedGem, true);
-                                        gameClient.SendMakeMove(ref firstSelectedGem.index, ref secondSelectedGem.index);
+                                        if (gameClient != null)
+                                        {
+                                            gameClient.SendMakeMove(ref firstSelectedGem.index, ref secondSelectedGem.index);
+                                        }
                                     }
                                     else
                                     {
@@ -280,6 +284,9 @@ public class GemsManager : MonoBehaviour
         gemsTable = null;
     }
 
+    int count = 0;
+    GemColor color = GemColor.INVALID;
+
     // ----------------------
     public void SwapGems(Gem gem1, Gem gem2)
     {
@@ -291,6 +298,7 @@ public class GemsManager : MonoBehaviour
             Debug.Log("Gems Matched");
             ExplodeGems(gem1Count);
             ExplodeGems(gem2Count);
+            
             DropGems();
             if(isOnline)
                 isMyTurn = !isMyTurn;
@@ -313,8 +321,8 @@ public class GemsManager : MonoBehaviour
     {
         gem1Count = backToBackCountOnIndex(gem1.GetIndex(), gem1.gemTypeSO.GemColor);
         gem2Count = backToBackCountOnIndex(gem2.GetIndex(), gem2.gemTypeSO.GemColor);
-        Debug.Log("CountG1H: " + gem1Count.horizontalGems.Count + " V: " + gem1Count.verticalGems.Count);
-        Debug.Log("CountG2H: " + gem2Count.horizontalGems.Count + " V: " + gem2Count.verticalGems.Count);
+        //Debug.Log("CountG1H: " + gem1Count.horizontalGems.Count + " V: " + gem1Count.verticalGems.Count);
+        //Debug.Log("CountG2H: " + gem2Count.horizontalGems.Count + " V: " + gem2Count.verticalGems.Count);
         return gem1Count.HasEnoughToMatch() || gem2Count.HasEnoughToMatch();
     }
 
@@ -366,6 +374,9 @@ public class GemsManager : MonoBehaviour
                 if (gem.gemTypeSO.GemType != GemType.Empty)
                 {
                     Instantiate(gemExplosion, gem.transform.position, gem.transform.rotation);
+                    count++;
+                    if (color != gem.gemTypeSO.GemColor)
+                        color = gem.gemTypeSO.GemColor;
                 }
                 GemTypeSO gemTypeSO = new GemTypeSO();
                 gemTypeSO.GemType = GemType.Empty;
@@ -381,6 +392,9 @@ public class GemsManager : MonoBehaviour
                 if (gem.gemTypeSO.GemType != GemType.Empty)
                 {
                     Instantiate(gemExplosion, gem.transform.position, gem.transform.rotation);
+                    count++;
+                    if(color != gem.gemTypeSO.GemColor)
+                        color = gem.gemTypeSO.GemColor;
                 }
                 GemTypeSO gemTypeSO = new GemTypeSO();
                 gemTypeSO.GemType = GemType.Empty;
@@ -388,6 +402,19 @@ public class GemsManager : MonoBehaviour
                 gem.SetType(gemTypeSO);
             }
         }
+
+        if(count > 0)
+        {
+            PlayerPowerups(count, color);
+            count = 0;
+        }
+    }
+
+    public void PlayerPowerups(int gemCount, GemColor gemColor)
+    {
+        Debug.Log(gemCount);
+        Debug.Log(gemColor);
+        powerupController.SetAnimation(gemColor, gemCount, !isMyTurn);
     }
 
     public void DropGems()
@@ -472,7 +499,7 @@ public class GemsManager : MonoBehaviour
             {
                 for (int i = y; i < boardNumCells.y - 1; i++)
                 {
-                    Debug.Log("Swapping " + i + " with " + (i + 1));
+                    //Debug.Log("Swapping " + i + " with " + (i + 1));
                     SwitchGemsPosition(gemsTable[x, i], gemsTable[x, i + 1]);
                     gemsTable[x, i].transform.position = GemPositionForIndex(x, i);
                     gemsTable[x, i + 1].transform.position = GemPositionForIndex(x, i + 1);

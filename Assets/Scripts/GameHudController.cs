@@ -39,7 +39,21 @@ public class GameHudController : MonoBehaviour
         _hpBottomPlayerHUD.value = HPBottomPlayer;
     }
 
-    public void OnPlayerHit(bool topPlayer)
+    public void OnPlayerAttack(bool topPlayer, int attackType)
+    {
+        if (topPlayer)
+        {
+            animTopPlayer.SetAttackAnimation(attackType);
+        }
+        else
+        {
+            animBottomPlayer.SetAttackAnimation(attackType);
+        }
+
+        OnPlayerHit(!topPlayer);
+    }
+
+    private void OnPlayerHit(bool topPlayer)
     {
         if (topPlayer)
         {
@@ -60,18 +74,6 @@ public class GameHudController : MonoBehaviour
         else
         {
             animBottomPlayer.SetRecoverAnimation();
-        }
-    }
-
-    public void OnPlayerAttack(bool topPlayer, int attackType)
-    {
-        if (topPlayer)
-        {
-            animTopPlayer.SetAttackAnimation(attackType);
-        }
-        else
-        {
-            animBottomPlayer.SetAttackAnimation(attackType);
         }
     }
 
